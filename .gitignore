@@ -1,0 +1,25 @@
+# Build & packaging outputs
+dist/
+.mygo/
+*.exe
+*.dll
+*.so
+*.dylib
+*.app
+*.dmg
+*.deb
+*.AppImage
+*.pkg.tar.gz
+
+# Go test / coverage artifacts
+*.test
+*.out
+coverage.txt
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

@@ -1,0 +1,13 @@
+{
+  "name": "MyVault",
+  "slug": "myvault",
+  "identifier": "io.github.oneryx.myvault",
+  "version": "0.1.0",
+  "icon": "cmd/myvault/assets/Icon.png",
+  "main": "./cmd/myvault",
+  "out": "dist",
+  "updates": {
+    "publicKey": "LNEMpXfsVuTOH4pEvgrIjXs4iVWJk6TnnkzGXFzFug0=",
+    "github": "oneryx/myvault"
+  }
+}

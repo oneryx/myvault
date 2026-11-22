@@ -1,0 +1,73 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Run the app
+    cmds:
+      - go run ./cmd/myvault
+
+  demo:
+    desc: Run the app on a built-in sample vault
+    cmds:
+      - go run ./cmd/myvault --demo
+
+  dev:
+    desc: Run the app with live reload
+    cmds:
+      - go tool mygo dev
+
+  test:
+    desc: Run the tests
+    cmds:
+      - gofmt -l . && go vet ./... && go test ./...
+
+  build:
+    desc: Build the app bundle and installers into dist
+    cmds:
+      - go tool mygo build
+
+  release:
+    desc: Tag the version in mygo.json and push it; CI builds a draft GitHub release
+    vars:
+      VERSION:
+        sh: jq -r .version mygo.json
+    preconditions:
+      - sh: rg -q '^## {{.VERSION}}$' CHANGELOG.md < /dev/null
+        msg: CHANGELOG.md needs a "## {{.VERSION}}" section
+    cmds:
+      - task: test
+      - git tag v{{.VERSION}}
+      - git push origin v{{.VERSION}}
+
+  install:
+    desc: Build the app for this machine (macOS arm64, Linux x64, Windows x64) and install it
+    cmds:
+      - task: install-{{OS}}
+
+  install-darwin:
+    internal: true
+    platforms: [darwin/arm64]
+    cmds:
+      - go tool mygo build -platform darwin/arm64 -skip-dmg
+      - osascript -e 'quit app id "io.github.oneryx.myvault"'
+      - for i in $(seq 20); do pgrep -qf MyVault.app/Contents/MacOS/MyVault || break; sleep 0.5; done
+      - rm -rf /Applications/MyVault.app
+      - ditto dist/darwin-arm64/MyVault.app /Applications/MyVault.app
+      - open /Applications/MyVault.app
+
+  install-linux:
+    internal: true
+    platforms: [linux/amd64]
+    cmds:
+      - go tool mygo build -platform linux/amd64
+      - sh dist/linux-amd64/install.sh
+
+  install-windows:
+    internal: true
+    platforms: [windows/amd64]
+    cmds:
+      - go tool mygo build -platform windows/amd64
+      - >-
+        powershell -NoProfile -Command '$v = (Get-Content mygo.json -Raw | ConvertFrom-Json).version;
+        Start-Process -Wait -FilePath "dist\windows-amd64\myvault-setup-$v-amd64.exe" -ArgumentList "/S";
+        Start-Process "$env:LOCALAPPDATA\Programs\MyVault\MyVault.exe"'
